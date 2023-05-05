@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  redbicicletas-fe:
+    container_name: redbicicletas-fe
+    image: alismo1013/redbicicletas-fe:1.0
+    environment:
+      - FRONTEND_PORT
+    ports:
+      - '5000:5000'
+    depends_on:
+      - redbicicletas-bicicletas
+    network_mode: host
+
+  redbicicletas-bicicletas:
+    container_name: redbicicletas-bicicletas
+    image: alismo1013/redbicicletas-bicicletas:1.0
+    environment:
+      - JWT_SECRET
+    ports:
+      - '3000:3000'
+    depends_on: # - users-kube
+    network_mode: host
