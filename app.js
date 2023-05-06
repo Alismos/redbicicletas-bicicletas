@@ -8,15 +8,16 @@ var express = require("express");
 var logger = require("morgan");
 var cors = require('cors');
 var path = require("path");
+require('dotenv').config()
 
 var JwtStrategy = require('passport-jwt').Strategy;
 
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
-var bicicletasRouter = require("./routes/bicicleta");
+ExtractJwt = require('passport-jwt').ExtractJwt;
+
 var app = express();
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(cors({ credentials: true, origin: 'http://localhost:8040' }));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -39,10 +40,35 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+var TOKEN_SECRET = process.env.SECRET;
+
+var cookieExtractor = function(req) {
+    let token = null;
+    if (req && req.cookies)
+    {
+      token = req.cookies['auth'];
+    }
+    return token;
+};
+
+
+var opts = {
+jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+secretOrKey: TOKEN_SECRET,
+};
+passport.use(
+'jwt',
+new JwtStrategy(opts, (jwt_payload, done) => {
+    try {
+    console.log('jwt_payload', jwt_payload);
+    done(null, jwt_payload);
+    } catch (err) {
+    done(err);
+    }
+}),
+);
 
 app.use("/", passport.authenticate('jwt', { session: false }), indexRouter);
-app.use("/users", usersRouter);
-app.use("/bicicletas", bicicletasRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
