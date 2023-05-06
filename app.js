@@ -17,7 +17,8 @@ ExtractJwt = require('passport-jwt').ExtractJwt;
 
 var app = express();
 
-app.use(cors({ credentials: true, origin: 'http://localhost:8040' }));
+app.use(cors({ origin: true,
+    credentials: true }));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));

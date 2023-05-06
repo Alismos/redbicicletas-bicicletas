@@ -5,19 +5,48 @@ services:
     container_name: redbicicletas-fe
     image: alismo1013/redbicicletas-fe:1.0
     environment:
-      - FRONTEND_PORT
+      REDBICICLETA_FE_PORT: 8040
+      SECRET: "asdkjakwe"
     ports:
-      - '5000:5000'
-    depends_on:
-      - redbicicletas-bicicletas
-    network_mode: host
+      - '8040:8040'
+    # network_mode: host
 
   redbicicletas-bicicletas:
     container_name: redbicicletas-bicicletas
     image: alismo1013/redbicicletas-bicicletas:1.0
     environment:
-      - JWT_SECRET
+      SECRET: "asdkjakwe"
+      REDBICICLETAS_ARQUILER_PORT: 8060
+      REDBICICLETA_BICICLETAS_PORT: 8050
     ports:
-      - '3000:3000'
-    depends_on: # - users-kube
-    network_mode: host
+      - '8050:8050'
+    depends_on:
+      - redbicicletas-fe
+
+  mysqldb:
+    container_name: mysqldb
+    image: alismo1013/mysql:1.0
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+    volumes:
+      - db:/var/lib/mysql
+    depends_on:
+      - redbicicletas-bicicletas
+
+  redbicicletas_alquiler:
+    container_name: redbicicletas-alquiler
+    image: alismo1013/redbicicletas-alquiler:1.0
+    ports:
+      - 8060:8060
+    environment:
+      SECRET: asdkjakwe
+      REDBICICLETAS_BICICLETAS_PORT: 8050
+      REDBICICLETAS_ARQUILER_PORT: 8060
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+volumes:
+  db:
